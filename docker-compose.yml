@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  database:
+    image: postgres:13.4-alpine
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-15432}:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+    env_file:
+      - .env
+    container_name: monafsa_db
+  redis:
+    image: redis:6.2-alpine
+    command: redis-server
+    volumes:
+      - redisdata:/data
+    ports:
+      - "${REDIS_PORT:-16379}:6379"
+    container_name: monafsa_redis
+  web:
+    build: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      - database
+      - redis
+    tty: true
+    stdin_open: true
+    container_name: monafsa_web
+  # sidekiq:
+  #   build: .
+  #   depends_on:
+  #     - web
+  #     - database
+  #     - redis
+  #   command: bundle exec sidekiq -C config/sidekiq.yml
+  #   volumes:
+  #     - .:/app
+  #   env_file:
+  #     - .env
+  #   container_name: monafsa_worker
+
+volumes:
+  postgresdata: {}
+  redisdata: {}
