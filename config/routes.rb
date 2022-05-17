@@ -5,9 +5,12 @@ Rails.application.routes.draw do
 
   root to: 'health_check#status'
 
-  scope :api do
-    scope :v1 do
+  namespace :api do
+    namespace :v1 do
       get '/status' => 'health_check#status'
+
+      resources :users
+      post '/login', to: 'authentication#login'
     end
   end  
 end
